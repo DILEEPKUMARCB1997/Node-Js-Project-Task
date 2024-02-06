@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/DILEEPKUMARCB1997/Node-Js-Project-Task/issues"
   },
-  "homepage": "https://github.com/DILEEPKUMARCB1997/Node-Js-Project-Task#readme"
+  "homepage": "https://github.com/DILEEPKUMARCB1997/Node-Js-Project-Task#readme",
+  "dependencies": {
+    "dgram": "^1.0.1"
+  }
 }
