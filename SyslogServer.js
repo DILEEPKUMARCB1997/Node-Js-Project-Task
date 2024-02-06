@@ -2,12 +2,12 @@ const dgram = require("node:dgram");
 const socket = dgram.createSocket("udp4");
 var Syslogd = require("syslogd");
 
-// socket.on("message", (msg, rinfo) => {
-//   console.log(rinfo);
-//   console.log(
-//     "Received broadcast from " + rinfo.address + ":" + rinfo.port + " - " + msg
-//   );
-// });
+socket.on("message", (msg, rinfo) => {
+  console.log(rinfo);
+  console.log(
+    "Received broadcast from " + rinfo.address + ":" + rinfo.port + " - " + msg
+  );
+});
 
 Syslogd(function (info) {
   // console.log("syslog msg", info);
@@ -33,8 +33,6 @@ Syslogd(function (info) {
   };
   console.log("syslog message", syslogMsg);
 }).listen(5514, function (err) {
-  // console.log(`Syslog server started :${Sysaddress}:${port}`);
-  // console.log(Syslogd.Severity);
   console.log(`Syslog server started`);
 });
 
