@@ -25,6 +25,7 @@
     "os": "^0.1.2",
     "syslog-client": "^1.1.1",
     "syslog-server": "^1.0.1",
-    "syslogd": "^1.1.2"
+    "syslogd": "^1.1.2",
+    "dgram": "^1.0.1"
   }
 }

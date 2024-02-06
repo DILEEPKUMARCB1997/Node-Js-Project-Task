@@ -1,131 +1,72 @@
-const UDP = require("dgram");
+const dgram = require("dgram");
+const socket = dgram.createSocket("udp4");
 
-const server = UDP.createSocket("udp4");
+// console.log("socket", socket);
 
-const port = 55954;
-
-// Define a function to convert the data into a packet
-
-server.on("listening", () => {
-  // Server address it’s using to listen
-
-  const address = server.address();
-
+socket.on("listening", function (message) {
+  const address = socket.address();
   console.log(
-    "Listining to ",
-    "Address: ",
-    address.address,
-    "Port: ",
-    address.port
+    "UDP socket listening on " + address.address + ":" + address.port
   );
+  console.log("message", message);
 });
 
-server.on("message", (msg, rinfo) => {
+socket.on("message", function (message, remote) {
   console.log(
-    "Received broadcast from " +
-      rinfo.address +
-      ":" +
-      rinfo.port +
-      " - " +
-      msg.toString()
+    "SERVER RECEIVED:",
+    remote.address + ":" + remote.port + " - " + message
   );
 
-  // const packet = Buffer.alloc(300);
+  console.log("msg", message);
 
-  // const MAC = packet
-  //   .slice(28, 34)
-  //   .toString("hex")
-  //   .match(/.{1,2}/g)
-  //   .join(":")
-  //   .toUpperCase();
+  console.log(
+    "mac",
+    message
+      .slice(28, 34)
+      .toString("hex")
+      .match(/.{1,2}/g)
+      .join(":")
+      .toUpperCase()
+  );
 
-  // // const oldIP = rinfo.oldIPAddress;
+  // console.log("mssg", message[1]);
 
-  // // Packet header
-  // packet[0] = 0;
-  // packet[1] = 1;
-  // packet[2] = 6;
-  // packet[4] = 0x92;
-  // packet[5] = 0xda; // const newIP = rinfo.address;
-  // // Old IP address
-  // // packet[12] = oldIP[0];
-  // // packet[13] = oldIP[1];
-  // // packet[14] = oldIP[2];
-  // // packet[15] = oldIP[3];
+  // console.log("old ip", message[12], message[13], message[14], message[15]);
+  // console.log("new ip", message[16], message[17], message[18], message[19]);
+  // console.log(
+  //   "new gateway",
+  //   message[24],
+  //   message[25],
+  //   message[26],
+  //   message[27]
+  // );
+  // console.log(
+  //   "mac add",
+  //   message[28],
+  //   message[29],
+  //   message[30],
+  //   message[31],
+  //   message[32],
+  //   message[33]
+  // );
 
-  // // New IP address
-  // // packet[16] = newIP[0];
-  // // packet[17] = newIP[1];
-  // // packet[18] = newIP[2];
-  // // packet[19] = newIP[3];
+  // const ms = Buffer.from(message.toJSON().data);
+  // console.log("ms", ms.toString("hex"));
 
-  // // MAC address
-  // packet[28] = MAC[0];
-  // packet[29] = MAC[1];
-  // packet[30] = MAC[2];
-  // packet[31] = MAC[3];
-  // packet[32] = MAC[4];
-  // packet[33] = MAC[5];
+  const packet = new Uint8Array(300);
+  packet[0] = 2;
+  packet[1] = 1;
+  packet[2] = 6;
+  packet[4] = 0x92;
+  packet[5] = 0xda;
 
-  let utf8Encode = new TextEncoder();
-  utf8Encode.encode("abc");
-  console.log("data", utf8Encode);
-  server.send(utf8Encode, port, rinfo.address, (err) => {
-    if (err) {
-      console.error("Failed to send response !!");
-    } else {
-      console.log("Response send Successfully");
-    }
-  });
+  socket.send(packet, 0, packet.length, remote.port, remote.address);
 });
 
-server.bind(port, "10.0.50.150", () => {
-  server.setBroadcast(true);
+socket.bind(55954, "10.0.50.90", () => {
+  console.log("server binded on port 55954");
 });
 
-// const dgram = require("node:dgram");
-// const server = dgram.createSocket("udp4");
-// const snmp = require("net-snmp");
-
-// server.on("error", (err) => {
-//   console.error(`server error:\n${err.stack}`);
-//   server.close();
+// socket.connect(55954, "10.0.50.90", () => {
+//   console.log("connected");
 // });
-
-// server.on("message", (msg, rinfo) => {
-//   console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-// });
-
-// server.on("listening", () => {
-//   const address = server.address();
-//   console.log(`server listening ${address.address}:${address.port}`);
-// });
-
-// server.bind(5514);
-
-// var session = snmp.createSession("10.0.50.12", "public");
-// console.log(session);
-
-// const option = {
-//   syslogStatus: ".10.1.2.1.0",
-//   serverPort: ".10.1.2.3.0",
-//   eventServerLevel: ".10.1.2.4.0",
-//   eventLogToFlash: ".10.1.2.5.0",
-//   eventServerIP: ".10.1.2.6.0",
-// };
-
-// const setting = {
-//   logLevel: 3,
-//   logToFlash: 1,
-//   logToServer: 1,
-//   serverIP: "10.0.50.150",
-//   serverPort: 514,
-// };
-// var varbind = [
-//   {
-//     oid: "1.3.6.1.2.1.1.4.0",
-//     type: snmp.ObjectType.OctetString,
-//     value: setting,
-//   },
-// ];
-// console.log(varbind);
