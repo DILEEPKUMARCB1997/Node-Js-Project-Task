@@ -1,98 +1,81 @@
-const tftp=require('tftp')
-const path=require('path')
 
-let server;
-let closed = true;
-const connections = [];
-// const connections = [];
 
-const rootFolderPath =
-  process.env.APPDATA ||
-  (process.platform == "darwin"
-    ? process.env.HOME + "/Library/Preferences"
-    : process.env.HOME + "/.local/share");
-const root = path.join(rootFolderPath, "/NMUbackupConfigs/");
+// const dgram = require("dgram");
 
- const isServerAlive = () => server !== undefined;
+// const port = 5162;
+// const address = "10.0.50.151";
 
-const startServer = (host) => {
-  try {
-    server = tftp.createServer({
-      host,
-      port: 69,
-      root: path.resolve(root),
-    });
+// const snmpRequest = new Buffer.from([
+//   0x30,
+//   0x2c, // seq, length
+//   0x02,
+//   0x01,
+//   0x01, // OID, length, SNMP version
+//   0x02,
+//   0x02,
+//   0x01,
+//   0x00, // community-string
+//   0x30,
+//   0x14, // seq, length
+//   0x06,
+//   0x08,
+//   0x2b,
+//   0x06,
+//   0x01,
+//   0x05,
+//   0x05,
+//   0x00,
+//   0x02,
+//   0x01, // enterprise OID
+//   0x04,
+//   0x00, // specific-type, no-such-object
+// ]);
 
-    /* eslint-disable */
-    server.on("request", function (req) {
-      req.on("error", function (error) {
-        // Error from the request
-        console.error(error);
-      });
+// const snmpServer = dgram.createSocket("udp4");
 
-      // Save the connection
-      connections.push(req);
+// snmpServer.on("listening", () => {
+//   console.log("SNMP trap server listening on " + address + ":" + port);
+// });
 
-      // The "close" event is fired when the internal socket closes, regardless
-      // whether it is produced by an error, the socket closes naturally due to the
-      // end of the transfer or the transfer has been aborted
-      req.on("close", function () {
-        // Remove the connection
-        connections.splice(connections.indexOf(this), 1);
-        if (closed && !connections.length) {
-          // The server and all the connections have been closed
-          console.log("Server closed");
-        }
-      });
-    });
-    /* eslint-enable */
-    //   /* eslint-disable func-names */
-    //   function(req, res) {
-    //     connections.push(req);
-    //     req.on('close', () => {
-    //       // Remove the connection
-    //       connections.splice(connections.indexOf(this), 1);
-    //       if (closed && !connections.length) {
-    //         // The server and all the connections have been closed
-    //         console.log('Server closed');
-    //       }
-    //     });
+// snmpServer.on("message", (message, remote) => {
+//   console.log("Received SNMP trap from " + remote.address + ":" + remote.port);
+//   console.log(message.toString("hex"));
+// });
 
-    //     this.requestListener(req, res);
-    //   },
-    //   /* eslint-enable */
-    // );
+// snmpServer.bind(port, address);
 
-    server.on("error", (error) => {
-      // Errors from the main socket
-      console.error(error);
-    });
+// // Send a sample SNMP trap
+// setInterval(() => {
+//   snmpServer.send(snmpRequest, 0, snmpRequest.length, port, address, (err) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log("Sent sample SNMP trap");
+//     }
+//   });
+// }, 3000);
 
-    server.listen();
-    closed = false;
-    server.on("close", () => {
-      console.log("server close");
-      server = undefined;
-      closed = true;
 
-      if (!connections.length) {
-        return console.log("Server closed");
-      }
-      // Abort all the current transfers
-      for (let i = 0; i < connections.length; i += 1) {
-        console.log(`Connection ${i} aborted`);
-        connections[i].abort();
-      }
-    });
 
-    server.on("listening", () => {
-      console.log("TFTP Server running.");
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+const dgram = require("dgram");
+const snmp = require("net-snmp");
 
- const closeServer = () => {
-  server.close();
-};
+const trapServer = dgram.createSocket("udp4");
+
+trapServer.on("listening", function () {
+  const address = trapServer.address();
+  console.log(
+    "Trap server listening on " + address.address + ":" + address.port
+  );
+});
+
+trapServer.on("message", function (message, remote) {
+  console.log("Received trap from " + remote.address + ":" + remote.port);
+console.log(remote);
+  // const trap = snmp.Trap.decode(message);
+  // console.log("Trap:", trap.toJSON());
+
+
+});
+
+trapServer.bind(5162,"10.0.50.151");

@@ -1,73 +1,49 @@
-// const str = "bobbyhadz.com";
+const dgram = require("node:dgram");
+const socket = dgram.createSocket("udp4");
+var Syslogd = require("syslogd");
 
-// const byteArray = Buffer.from(str, "utf8");
+socket.on("message", (msg, rinfo) => {
+ // console.log(rinfo);
+  console.log(
+    "Received broadcast from " + rinfo.address + ":" + rinfo.port + " - " + msg
+  );
+});
 
-// // 👇️ <Buffer 62 6f 62 62 79 68 61 64 7a 2e 63 6f 6d>
-// console.log(byteArray);
-// var str = "Hello竜";
-// var bytes = []; // char codes
-// var bytesv2 = []; // char codes
+Syslogd(function (info) {
+  // console.log("syslog msg", info);
+  // info = {
+  //   facility: 7,
+  //   severity: 22,
+  //   tag: "tag",
+  //   hostname: "hostname",
+  //   address: "127.0.0.1",
+  //   family: "IPv4",
+  //   port: null,
+  //   size: 39,
+  //   msg: "info",
+  // };
 
-// for (var i = 0; i < str.length; ++i) {
-//   var code = str.charCodeAt(i);
+  const syslogMsg = {
+    facility: info.facility,
+    severity: Number.isNaN(info.severity) ? 0 : info.severity,
+    tag: info.tag,
+    sourceIP: info.address,
+    uptime: info.hostname,
+    message: info.msg,
+  };
+  console.log("syslog message", syslogMsg);
+}).listen(5514, function (err) {
+  console.log(`Syslog server started`);
+});
 
-//   bytes = bytes.concat([code]);
+// Handle errors
+socket.on("error", (err) => {
+  console.error("Socket error:", err);
+  socket.close();
+});
 
-//   bytesv2 = bytesv2.concat([code & 0xff, (code / 256) >>> 0]);
-// }
-
-// // 72, 101, 108, 108, 111, 31452
-// console.log("bytes", bytes.join(", "));
-
-// // 72, 0, 101, 0, 108, 0, 108, 0, 111, 0, 220, 122
-// console.log("bytesv2", bytesv2.join(", "));
-
-
-// function getInvitePacket(data) {
-//   if (!Authentication.isValid) {
-//     return null;
-//   }
-//   try {
-//     const packet = Buffer.allocUnsafe(300);
-//     packet[0] = 2;
-//     packet[1] = 1;
-//     packet[2] = 6;
-//     packet[4] = 0x92;
-//     packet[5] = 0xda;
-// console.log(packet);
-//     return packet;
-//   } catch (error) {
-//     return null;
-//   }
-// }
-
-// ModelInfo class to byte array
-var modelInfo = {
-  model: "My Model",
-  MACAddress: "01:23:45:67:89:ab",
-  IPAddress: "192.168.1.1",
-  netmask: "255.255.255.0",
-  gateway: "192.168.1.254",
-  hostname: "my-model.local",
-  kernel: "5.4.0-42-generic",
-  ap: "My Access Point",
-  isDHCP: true
-};
-
-var modelInfoJson = JSON.stringify(modelInfo);
-var modelInfoBytes = new TextEncoder().encode(modelInfoJson);
-console.log(modelInfoBytes);
-// NetworkConfig class to byte array
-var networkConfig = {
-  MACAddress: "01:23:45:67:89:ab",
-  IPAddress: "192.168.1.1",
-  newIPAddress: "192.168.1.2",
-  netmask: "255.255.255.0",
-  gateway: "192.168.1.254",
-  hostname: "my-model.local",
-  username: "my-username",
-  password: "my-password"
-};
-
-var networkConfigJson = JSON.stringify(networkConfig);
-var networkConfigBytes = new TextEncoder().encode(networkConfigJson);
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`server listening ${address.address}:${address.port}`);
+});
+socket.bind(55954, "10.0.50.151");
