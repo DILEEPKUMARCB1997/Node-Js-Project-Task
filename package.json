@@ -17,18 +17,6 @@
   },
   "homepage": "https://github.com/DILEEPKUMARCB1997/Node-Js-Project-Task#readme",
   "dependencies": {
-    "arpscan": "^1.0.2",
-    "async": "^3.2.5",
-    "express": "^4.18.2",
-    "libnmap": "^0.4.19",
-    "net-snmp": "^3.10.0",
-    "netmask": "^2.0.2",
-    "nodemon": "^3.0.3",
-    "request-ip": "^3.3.0",
-    "snmp-native": "^1.2.0",
-    "snmpjs": "0.0.1",
-    "subnet-cidr-calculator": "^1.0.12",
-    "syslogd": "^1.1.2",
-    "tftp": "^0.1.2"
+    "dgram": "^1.0.1"
   }
 }
