@@ -3,14 +3,14 @@ const socket = dgram.createSocket("udp4");
 var Syslogd = require("syslogd");
 
 socket.on("message", (msg, rinfo) => {
- // console.log(rinfo);
+ console.log(rinfo);
   console.log(
     "Received broadcast from " + rinfo.address + ":" + rinfo.port + " - " + msg
   );
 });
 
 Syslogd(function (info) {
-  // console.log("syslog msg", info);
+  //console.log("syslog msg", info);
   // info = {
   //   facility: 7,
   //   severity: 22,
