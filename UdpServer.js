@@ -29,6 +29,8 @@ socket.on("message", function (message, remote) {
       .toUpperCase()
   );
 
+  console.log("ipaddress", remote.address);
+
   // console.log("mssg", message[1]);
 
   // console.log("old ip", message[12], message[13], message[14], message[15]);
