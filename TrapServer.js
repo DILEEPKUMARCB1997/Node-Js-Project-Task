@@ -1,5 +1,52 @@
+
+// const dgram = require("dgram");
+// const snmp = require("net-snmp");
+
+// const socket = dgram.createSocket("udp4");
+
+// socket.on("message", (msg, rinfo) => {
+//  console.log(rinfo);
+//   console.log(
+//     `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
+//   );
+// });
+
+// socket.on("error", (err) => {
+//   console.error("Socket error:", err);
+//   socket.close();
+// });
+
+// socket.on("listening", () => {
+//   const address = socket.address();
+//   console.log(`server listening ${address.address}:${address.port}`);
+// });
+
+// socket.bind(55954, "10.0.50.151");
+
+// const session = new snmp.Session({
+//   port: 5162,
+//   host: "localhost",
+//   version: snmp.Version2c,
+//   community: "public",
+// })
+
+// //console.log(session.target);
+// session.on("snmp data", (data) => {
+//   console.log("Received SNMP data:", data);
+// });
+
+// session.on("snmp end", () => {
+//   console.log("SNMP session ended");
+// });
+
+// session.on("snmp error", (error) => {
+//   console.error("SNMP error:", error);
+// });
+
+
 const dgram = require("dgram");
 const assert = require("assert");
+
 const trapMapping = [
   "cold start",
   "warm start",
@@ -9,12 +56,7 @@ const trapMapping = [
   "egp neighbor loss",
   "enterprise specific",
 ];
-//   0: 'cold start',
-//   1: 'warm start',
-//   2: 'link down',
-//   3: 'link up',
-//   4: 'authentication failure',
-// };
+
 
 const ASN1 = {
   EOC: 0,
@@ -66,7 +108,7 @@ function Reader(data) {
   this._buf = data;
   this._size = data.length;
 
-  // These hold the "current" state
+
   this._len = 0;
   this._offset = 0;
 
@@ -139,12 +181,11 @@ Reader.prototype.readLength = function readLength(_offset) {
 
     if (lenB === 0) {
       console.log("Indefinite length not supported");
-      //throw ASN1.TypeError('Indefinite length not supported');
+  
     }
 
     if (lenB > 4) {
       console.log("encoding too long");
-      //throw ASN1.TypeError('encoding too long');
     }
 
     if (this._size - offset < lenB) {
@@ -179,14 +220,7 @@ Reader.prototype.readSequence = function readSequence(tag) {
 
   if (tag !== undefined && tag !== seq) {
     console.log("read sequence");
-    // console.log(
-    //   `ASN1.TypeError Expected 0x${tag.toString(16)}: got 0x${seq.toString(
-    //     16,
-    //   )}`,
-    // );
-    // throw ASN1.TypeError(
-    //   `Expected 0x${tag.toString(16)}: got 0x${seq.toString(16)}`,
-    // );
+   
   }
 
   const o = this.readLength(this._offset + 1); // stored in `length`
@@ -217,23 +251,17 @@ Reader.prototype.readString = function readString(_tag, retbuf) {
   }
 
   const b = this.peek();
-  //console.log("b: "${b}", tag: "${tag});
+
 
   if (b === null) {
     return null;
   }
 
   if (b !== tag) {
-    //console.log(b);
-    // console.log(
-    //   `ASN1.TypeError Expected 0x${tag.toString(16)}: got 0x${b.toString(16)}`,
-    // );
-    // throw ASN1.TypeError(
-    //   `Expected 0x${tag.toString(16)}: got 0x${b.toString(16)}`,
-    // );
+  
   }
 
-  const o = this.readLength(this._offset + 1); // stored in `length`
+  const o = this.readLength(this._offset + 1);
 
   if (o === null) {
     return null;
@@ -298,13 +326,7 @@ Reader.prototype.readTag = function readTag(tag) {
   }
 
   if (b !== tag) {
-    //console.log('readTag');
-    // console.log(
-    //   `ASN1.TypeError Expected 0x${tag.toString(16)}: got 0x${b.toString(16)}`,
-    // );
-    // throw ASN1.TypeError(
-    //   `Expected 0x${tag.toString(16)}: got 0x${b.toString(16)}`,
-    // );
+ 
   }
 
   const o = this.readLength(this._offset + 1); // stored in `length`
@@ -412,75 +434,64 @@ function readVarbinds(reader) {
   return vbs;
 }
 
-function Receiver(port, onTrap, onError, onStart) {
+// 
+const Receiver = function (port, onTrap, onError, onStart) {
   this.port = port;
   this.socket = null;
   this.isRunning = false;
   this.onTrap = onTrap;
   this.onError = onError;
   this.onStart = onStart;
-}
-
-Receiver.prototype.start = function start() {
-  try {
-    const self = this;
-    if (self.isRunning) return;
-    const socket = (self.socket = dgram.createSocket("udp4"));
-    socket.on("error", (err) => {
-      console.error(err);
-      socket.close();
-      self.isRunning = false;
-      if (self.onError) {
-        self.onError(err);
-      }
-    });
-    socket.on("message", (msg, remote) => {
-      if (self.onTrap) {
-        const pkt = parseTrapPacket(msg);
-        self.onTrap(remote, pkt);
-      }
-    });
-    socket.on("listening", () => {
-      self.isRunning = true;
-      if (self.onStart) {
-        self.onStart(self.port);
-      }
-    });
-    socket.bind(self.port);
-  } catch (error) {
-    console.error(error);
-  }
 };
 
-Receiver.prototype.stop = function stop() {
-  const self = this;
-  if (self.isRunning) {
-    if (self.socket) {
-      self.socket.close();
-      self.isRunning = false;
+Receiver.prototype.start = function () {
+  try {
+    const socket = dgram.createSocket("udp4");
+    socket.on("message", (msg, rinfo) => {
+    //  console.log(rinfo);
+      if (this.onTrap) {
+        const pkt = parseTrapPacket(msg);
+        this.onTrap(rinfo, pkt);
+      }
+      console.log(
+        `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
+      );
+    });
+
+    socket.on("error", (err) => {
+      console.error("Socket error:", err);
+      socket.close();
+    });
+
+    socket.on("listening", () => {
+      const address = socket.address();
+      console.log(`server listening ${address.address}:${address.port}`);
+    });
+
+    socket.bind(this.port, "10.0.50.151");
+    this.socket = socket;
+    this.isRunning = true;
+    if (this.onStart) {
+      this.onStart(this.port);
+    }
+  } catch (err) {
+    if (this.onError) {
+      this.onError(err);
     }
   }
 };
-/* eslint-enable */
-// { address: '192.168.5.84',
-//   family: 'IPv4',
-//   port: 38104,
-//   size: 61,
-//   version: 0,
-//   community: 'test',
-//   type: 164,
-//   enterprise: '1.3.6.1.4.1.3755.0.0.31',
-//   agentAddr: '192.168.5.84',
-//   specific: 3,
-//   generic: 4,
-//   upTime: 7047621,
-//   varbinds: [ { oid: '1.3.6.1.2.1.2.2.1.1.4', type: 2, value: 4 } ],
-//   msg: 'link up' }
+
+Receiver.prototype.stop = function () {
+  if (this.isRunning && this.socket) {
+    this.socket.close();
+    this.isRunning = false;
+  }
+};
 
 const trap = new Receiver(
   5162,
   (remote, pkt) => {
-    console.log(remote);
+   //console.log(remote);
     const sourceIP = remote.address;
     const {
       version,
@@ -514,7 +525,7 @@ const trap = new Receiver(
     console.log(error);
   },
   (port) => {
-    console.log(`Trap server start listen on : ${port}`);
+    console.log(`Trap server start listening on : ${port}`);
   }
 );
 

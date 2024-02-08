@@ -3,7 +3,7 @@ const socket = dgram.createSocket("udp4");
 var Syslogd = require("syslogd");
 
 Syslogd(function (info) {
-  // console.log("syslog msg", info);
+  //console.log("syslog msg", info);
   // info = {
   //   facility: 7,
   //   severity: 22,
@@ -26,7 +26,7 @@ Syslogd(function (info) {
   };
   console.log("syslog message", syslogMsg);
 }).listen(5514, function (err) {
-  console.log(`Syslog server started`);
+  console.log(`Syslog server started 5514`);
 });
 
 // Handle errors
@@ -39,7 +39,7 @@ socket.on("listening", () => {
   const address = socket.address();
   console.log(`server listening ${address.address}:${address.port}`);
 });
-socket.bind(55954, "10.0.50.150");
+socket.bind(55954, "10.0.50.151");
 
 // var dgram = require("dgram");
 // var syslog = require("syslogd");
