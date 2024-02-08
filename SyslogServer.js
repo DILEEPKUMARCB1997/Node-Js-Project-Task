@@ -1,7 +1,7 @@
 var Syslogd = require("syslogd");
 
 Syslogd(function (info) {
-  // console.log("syslog msg", info);
+  //console.log("syslog msg", info);
   // info = {
   //   facility: 7,
   //   severity: 22,
@@ -24,5 +24,5 @@ Syslogd(function (info) {
   };
   console.log("syslog message", syslogMsg);
 }).listen(5514, function (err) {
-  console.log(`Syslog server started`);
+  console.log(`Syslog server started 5514`);
 });
