@@ -17,7 +17,7 @@ socket.on("message", function (message, remote) {
     remote.address + ":" + remote.port + " - " + message
   );
 
-  // console.log("msg", message);
+  console.log("msg", message);
 
   console.log(
     "mac",
@@ -28,6 +28,8 @@ socket.on("message", function (message, remote) {
       .join(":")
       .toUpperCase()
   );
+  console.log("model", message.slice(44, 64).toString());
+  console.log("ip", message.subarray(12, 17).toString());
 
   // console.log("mssg", message[1]);
 
@@ -63,7 +65,7 @@ socket.on("message", function (message, remote) {
   socket.send(packet, 0, packet.length, remote.port, remote.address);
 });
 
-socket.bind(55954, "10.0.50.150", () => {
+socket.bind(55954, "10.0.50.90", () => {
   console.log("server binded on port 55954");
 });
 

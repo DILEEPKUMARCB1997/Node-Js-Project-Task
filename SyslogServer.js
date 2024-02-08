@@ -46,4 +46,4 @@ socket.on("listening", () => {
   const address = socket.address();
   console.log(`server listening ${address.address}:${address.port}`);
 });
-socket.bind(55954, "10.0.50.150");
+socket.bind(55954, "10.0.50.90");
