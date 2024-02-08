@@ -30,7 +30,7 @@ socket.on("message", function (message, remote) {
       .toUpperCase()
   );
 
-  console.log("ipaddress", remote.address);
+  //console.log("ipaddress", remote.address);
 
   // console.log("mssg", message[1]);
 
