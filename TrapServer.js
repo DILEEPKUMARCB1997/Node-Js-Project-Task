@@ -46,7 +46,7 @@
 
 const dgram = require("dgram");
 const assert = require("assert");
-const socket = dgram.createSocket("udp4");
+
 const trapMapping = [
   "cold start",
   "warm start",
@@ -56,6 +56,7 @@ const trapMapping = [
   "egp neighbor loss",
   "enterprise specific",
 ];
+
 
 const ASN1 = {
   EOC: 0,
@@ -107,7 +108,7 @@ function Reader(data) {
   this._buf = data;
   this._size = data.length;
 
-  // These hold the "current" state
+
   this._len = 0;
   this._offset = 0;
 
@@ -180,6 +181,7 @@ Reader.prototype.readLength = function readLength(_offset) {
 
     if (lenB === 0) {
       console.log("Indefinite length not supported");
+  
     }
 
     if (lenB > 4) {
@@ -195,6 +197,7 @@ Reader.prototype.readLength = function readLength(_offset) {
       this._len = (this._len << 8) + (this._buf[offset++] & 0xff);
     }
   } else {
+    // Wasn't a variable length
     this._len = lenB;
   }
 
@@ -217,9 +220,10 @@ Reader.prototype.readSequence = function readSequence(tag) {
 
   if (tag !== undefined && tag !== seq) {
     console.log("read sequence");
+   
   }
 
-  const o = this.readLength(this._offset + 1);
+  const o = this.readLength(this._offset + 1); // stored in `length`
   if (o === null) {
     return null;
   }
@@ -247,16 +251,17 @@ Reader.prototype.readString = function readString(_tag, retbuf) {
   }
 
   const b = this.peek();
-  //console.log("b: "${b}", tag: "${tag});
+
 
   if (b === null) {
     return null;
   }
 
   if (b !== tag) {
+  
   }
 
-  const o = this.readLength(this._offset + 1); // stored in `length`
+  const o = this.readLength(this._offset + 1);
 
   if (o === null) {
     return null;
@@ -321,14 +326,17 @@ Reader.prototype.readTag = function readTag(tag) {
   }
 
   if (b !== tag) {
+ 
   }
 
-  const o = this.readLength(this._offset + 1);
+  const o = this.readLength(this._offset + 1); // stored in `length`
   if (o === null) {
     return null;
   }
 
   if (this.length > 4) {
+    //console.log(`Integer too long:${this.length}`);
+    //throw ASN1.TypeError(`Integer too long:${this.length}`);
   }
 
   if (this.length > this._size - o) {
@@ -352,19 +360,20 @@ function parseTrapPacket(buffer) {
   const reader = new Reader(buffer);
 
   reader.readSequence();
-  pkt.version = reader.readInt();
-  pkt.community = reader.readString();
-  pkt.type = reader.readSequence();
+  pkt.version = reader.readInt(); // 02 01 00
+  pkt.community = reader.readString(); // 04 06 70 75 62 6c 69 63
+  pkt.type = reader.readSequence(); // a4
+  // 0x06, 0x0c, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x81, 0x91, 0x28, 0x02, 0x02, 0x47, 0x64
   pkt.enterprise = reader.readOID();
-  const bytes = reader.readString(64, true);
+  const bytes = reader.readString(64, true); // 0x40, 0x04, 0xc0, 0xa8, 0x17, 0x0a,
   pkt.agentAddr = `${bytes[0]}.${bytes[1]}.${bytes[2]}.${bytes[3]}`;
-  pkt.specific = reader.readInt();
-  pkt.generic = reader.readInt();
-  pkt.upTime = reader.readTag(67);
+  pkt.specific = reader.readInt(); // 0x02, 0x01, 0x06,
+  pkt.generic = reader.readInt(); // 0x02, 0x01, 0x0a
+  pkt.upTime = reader.readTag(67); //
   pkt.varbinds = readVarbinds(reader);
   return pkt;
 }
-///console.log(parseTrapPacket);
+
 function readVarbinds(reader) {
   const vbs = [];
   reader.readSequence();
@@ -420,67 +429,69 @@ function readVarbinds(reader) {
       oid,
       type,
       value,
-   
     });
   }
   return vbs;
 }
 
-function Receiver(port, onTrap, onError, onStart) {
+// 
+const Receiver = function (port, onTrap, onError, onStart) {
   this.port = port;
   this.socket = null;
   this.isRunning = false;
   this.onTrap = onTrap;
   this.onError = onError;
   this.onStart = onStart;
-}
+};
 
-Receiver.prototype.start = function start() {
+Receiver.prototype.start = function () {
   try {
-    const self = this;
-    if (self.isRunning) return;
-    const socket = (self.socket = dgram.createSocket("udp4"));
-    socket.on("error", (err) => {
-      console.error(err);
-      socket.close();
-      self.isRunning = false;
-      if (self.onError) {
-        self.onError(err);
-      }
-    });
-    socket.on("message", (msg, remote) => {
-      console.log(remote);
-      if (self.onTrap) {
+    const socket = dgram.createSocket("udp4");
+    socket.on("message", (msg, rinfo) => {
+    //  console.log(rinfo);
+      if (this.onTrap) {
         const pkt = parseTrapPacket(msg);
-        self.onTrap(remote, pkt);
+        this.onTrap(rinfo, pkt);
       }
+      console.log(
+        `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
+      );
     });
+
+    socket.on("error", (err) => {
+      console.error("Socket error:", err);
+      socket.close();
+    });
+
     socket.on("listening", () => {
-      self.isRunning = true;
-      if (self.onStart) {
-        self.onStart(self.port);
-      }
+      const address = socket.address();
+      console.log(`server listening ${address.address}:${address.port}`);
     });
-    socket.bind(self.port);
-  } catch (error) {
-    console.error(error);
+
+    socket.bind(this.port, "10.0.50.151");
+    this.socket = socket;
+    this.isRunning = true;
+    if (this.onStart) {
+      this.onStart(this.port);
+    }
+  } catch (err) {
+    if (this.onError) {
+      this.onError(err);
+    }
   }
 };
 
-Receiver.prototype.stop = function stop() {
-  const self = this;
-  if (self.isRunning) {
-    if (self.socket) {
-      self.socket.close();
-      self.isRunning = false;
-    }
+Receiver.prototype.stop = function () {
+  if (this.isRunning && this.socket) {
+    this.socket.close();
+    this.isRunning = false;
   }
 };
 
 const trap = new Receiver(
   5162,
   (remote, pkt) => {
-    console.log(pkt);
+   //console.log(remote);
     const sourceIP = remote.address;
     const {
       version,
@@ -514,10 +525,8 @@ const trap = new Receiver(
     console.log(error);
   },
   (port) => {
-    console.log(`Trap server start listen on : ${port}`);
+    console.log(`Trap server start listening on : ${port}`);
   }
 );
 
 trap.start();
-
-
