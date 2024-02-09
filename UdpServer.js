@@ -8,7 +8,7 @@ socket.on("listening", function (message) {
   console.log(
     "UDP socket listening on " + address.address + ":" + address.port
   );
-  console.log("message", message);
+  //console.log("message", message);
 });
 
 socket.on("message", function (message, remote) {
@@ -17,7 +17,7 @@ socket.on("message", function (message, remote) {
     remote.address + ":" + remote.port + " - " + message
   );
 
-  // console.log("msg", message);
+  //console.log("msg", message);
 
   console.log(
     "mac",
@@ -28,6 +28,8 @@ socket.on("message", function (message, remote) {
       .join(":")
       .toUpperCase()
   );
+
+  //console.log("ipaddress", remote.address);
 
   // console.log("mssg", message[1]);
 
@@ -63,7 +65,7 @@ socket.on("message", function (message, remote) {
   socket.send(packet, 0, packet.length, remote.port, remote.address);
 });
 
-socket.bind(55954, "10.0.50.150", () => {
+socket.bind(55954, "10.0.50.151", () => {
   console.log("server binded on port 55954");
 });
 
