@@ -455,7 +455,7 @@ Receiver.prototype.start = function () {
       // console.log(`server listening ${address.address}:${address.port}`);
     });
 
-    socket.bind(this.port, "10.0.50.150");
+    socket.bind(this.port, "10.0.50.90");
     this.socket = socket;
     this.isRunning = true;
     if (this.onStart) {
