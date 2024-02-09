@@ -1,5 +1,3 @@
-
-
 // const dgram = require("dgram");
 
 // const port = 5162;
@@ -55,8 +53,6 @@
 //   });
 // }, 3000);
 
-
-
 const dgram = require("dgram");
 const snmp = require("net-snmp");
 
@@ -71,11 +67,9 @@ trapServer.on("listening", function () {
 
 trapServer.on("message", function (message, remote) {
   console.log("Received trap from " + remote.address + ":" + remote.port);
-console.log(remote);
+  console.log(remote);
   // const trap = snmp.Trap.decode(message);
   // console.log("Trap:", trap.toJSON());
-
-
 });
 
-trapServer.bind(5162,"10.0.50.151");
+trapServer.bind(5162, "10.0.50.90");

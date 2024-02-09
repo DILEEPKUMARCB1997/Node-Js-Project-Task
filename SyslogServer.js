@@ -26,18 +26,3 @@ Syslogd(function (info) {
 }).listen(5514, function (err) {
   console.log(`Syslog server started 5514`);
 });
-<<<<<<< HEAD
-
-// Handle errors
-socket.on("error", (err) => {
-  console.error("Socket error:", err);
-  socket.close();
-});
-
-socket.on("listening", () => {
-  const address = socket.address();
-  console.log(`server listening ${address.address}:${address.port}`);
-});
-socket.bind(55954, "10.0.50.90");
-=======
->>>>>>> ad50ab66db826ed3f6c183038ab4c8120e163b98
