@@ -192,7 +192,7 @@ Reader.prototype.readLength = function readLength(_offset) {
       this._len = (this._len << 8) + (this._buf[offset++] & 0xff);
     }
   } else {
-    // Wasn't a variable length
+
     this._len = lenB;
   }
 
@@ -208,7 +208,7 @@ Reader.prototype.readLength = function readLength(_offset) {
  */
 Reader.prototype.readSequence = function readSequence(tag) {
   const seq = this.peek();
-  //console.log("tag: "${tag});
+ 
   if (seq === null) {
     return null;
   }
@@ -217,7 +217,7 @@ Reader.prototype.readSequence = function readSequence(tag) {
     console.log("read sequence");
   }
 
-  const o = this.readLength(this._offset + 1); // stored in `length`
+  const o = this.readLength(this._offset + 1); 
   if (o === null) {
     return null;
   }
@@ -265,7 +265,7 @@ Reader.prototype.readString = function readString(_tag, retbuf) {
 
   this._offset = o;
 
-  if (this.length === 0) {
+  if (this.length ===0) {
     return retbuf ? Buffer.alloc(0) : "";
   }
 
@@ -311,7 +311,7 @@ Reader.prototype.readTag = function readTag(tag) {
   assert.ok(tag !== undefined);
 
   const b = this.peek();
-  //console.log("tag: "${tag}", b: "${b});
+  
 
   if (b === null) {
     return null;
@@ -320,14 +320,13 @@ Reader.prototype.readTag = function readTag(tag) {
   if (b !== tag) {
   }
 
-  const o = this.readLength(this._offset + 1); // stored in `length`
+  const o = this.readLength(this._offset + 1); 
   if (o === null) {
     return null;
   }
 
   if (this.length > 4) {
-    //console.log(`Integer too long:${this.length}`);
-    //throw ASN1.TypeError(`Integer too long:${this.length}`);
+   
   }
 
   if (this.length > this._size - o) {
@@ -351,16 +350,16 @@ function parseTrapPacket(buffer) {
   const reader = new Reader(buffer);
 
   reader.readSequence();
-  pkt.version = reader.readInt(); // 02 01 00
-  pkt.community = reader.readString(); // 04 06 70 75 62 6c 69 63
-  pkt.type = reader.readSequence(); // a4
-  // 0x06, 0x0c, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x81, 0x91, 0x28, 0x02, 0x02, 0x47, 0x64
+  pkt.version = reader.readInt(); 
+  pkt.community = reader.readString();
+  pkt.type = reader.readSequence(); 
+
   pkt.enterprise = reader.readOID();
-  const bytes = reader.readString(64, true); // 0x40, 0x04, 0xc0, 0xa8, 0x17, 0x0a,
+  const bytes = reader.readString(64, true); 
   pkt.agentAddr = `${bytes[0]}.${bytes[1]}.${bytes[2]}.${bytes[3]}`;
-  pkt.specific = reader.readInt(); // 0x02, 0x01, 0x06,
-  pkt.generic = reader.readInt(); // 0x02, 0x01, 0x0a
-  pkt.upTime = reader.readTag(67); //
+  pkt.specific = reader.readInt(); 
+  pkt.generic = reader.readInt(); 
+  pkt.upTime = reader.readTag(67); 
   pkt.varbinds = readVarbinds(reader);
   return pkt;
 }
@@ -439,9 +438,10 @@ Receiver.prototype.start = function () {
   try {
     const socket = dgram.createSocket("udp4");
     socket.on("message", (msg, rinfo) => {
+      
       if (this.onTrap) {
         const pkt = parseTrapPacket(msg);
-       // console.log(pkt);
+
         this.onTrap(rinfo, pkt);
       }
       // console.log(
