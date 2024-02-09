@@ -438,7 +438,6 @@ Receiver.prototype.start = function () {
   try {
     const socket = dgram.createSocket("udp4");
     socket.on("message", (msg, rinfo) => {
-      
       if (this.onTrap) {
         const pkt = parseTrapPacket(msg);
 
@@ -456,7 +455,7 @@ Receiver.prototype.start = function () {
 
     socket.on("listening", () => {
       const address = socket.address();
-    //  console.log(`server listening ${address.address}:${address.port}`);
+      // console.log(`server listening ${address.address}:${address.port}`);
     });
 
     socket.bind(this.port, "10.0.50.151");

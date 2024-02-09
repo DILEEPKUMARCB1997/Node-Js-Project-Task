@@ -1,9 +1,4 @@
 
-
-
-
-
-
 var dgram = require("dgram");
 var syslog = require("syslogd");
 

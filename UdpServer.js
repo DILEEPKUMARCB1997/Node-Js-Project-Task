@@ -4,12 +4,11 @@ const socket = dgram.createSocket("udp4");
 // console.log("socket", socket);
 
 socket.on("listening", function (message) {
-
   const address = socket.address();
   console.log(
     "UDP socket listening on " + address.address + ":" + address.port
   );
- console.log("message", message);
+  console.log("message", message);
 });
 
 socket.on("message", function (message, remote) {
@@ -29,8 +28,6 @@ socket.on("message", function (message, remote) {
       .join(":")
       .toUpperCase()
   );
-
-  //console.log("ipaddress", remote.address);
 
   // console.log("mssg", message[1]);
 
@@ -64,11 +61,9 @@ socket.on("message", function (message, remote) {
   packet[5] = 0xda;
 
   socket.send(packet, 0, packet.length, remote.port, remote.address);
-  console.log(packet);
-
 });
 
-socket.bind(55954, "10.0.50.151", () => {
+socket.bind(55954, "10.0.50.150", () => {
   console.log("server binded on port 55954");
 });
 
