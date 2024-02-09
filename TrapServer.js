@@ -1,4 +1,3 @@
-
 // const dgram = require("dgram");
 // const snmp = require("net-snmp");
 
@@ -43,7 +42,6 @@
 //   console.error("SNMP error:", error);
 // });
 
-
 const dgram = require("dgram");
 const assert = require("assert");
 
@@ -56,7 +54,6 @@ const trapMapping = [
   "egp neighbor loss",
   "enterprise specific",
 ];
-
 
 const ASN1 = {
   EOC: 0,
@@ -107,7 +104,6 @@ function Reader(data) {
 
   this._buf = data;
   this._size = data.length;
-
 
   this._len = 0;
   this._offset = 0;
@@ -181,7 +177,6 @@ Reader.prototype.readLength = function readLength(_offset) {
 
     if (lenB === 0) {
       console.log("Indefinite length not supported");
-  
     }
 
     if (lenB > 4) {
@@ -220,7 +215,6 @@ Reader.prototype.readSequence = function readSequence(tag) {
 
   if (tag !== undefined && tag !== seq) {
     console.log("read sequence");
-   
   }
 
   const o = this.readLength(this._offset + 1); // stored in `length`
@@ -252,13 +246,11 @@ Reader.prototype.readString = function readString(_tag, retbuf) {
 
   const b = this.peek();
 
-
   if (b === null) {
     return null;
   }
 
   if (b !== tag) {
-  
   }
 
   const o = this.readLength(this._offset + 1);
@@ -326,7 +318,6 @@ Reader.prototype.readTag = function readTag(tag) {
   }
 
   if (b !== tag) {
- 
   }
 
   const o = this.readLength(this._offset + 1); // stored in `length`
@@ -434,7 +425,7 @@ function readVarbinds(reader) {
   return vbs;
 }
 
-// 
+//
 const Receiver = function (port, onTrap, onError, onStart) {
   this.port = port;
   this.socket = null;
@@ -448,14 +439,14 @@ Receiver.prototype.start = function () {
   try {
     const socket = dgram.createSocket("udp4");
     socket.on("message", (msg, rinfo) => {
-    //  console.log(rinfo);
       if (this.onTrap) {
         const pkt = parseTrapPacket(msg);
+       // console.log(pkt);
         this.onTrap(rinfo, pkt);
       }
-      console.log(
-        `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
-      );
+      // console.log(
+      //   `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
+      // );
     });
 
     socket.on("error", (err) => {
@@ -465,7 +456,7 @@ Receiver.prototype.start = function () {
 
     socket.on("listening", () => {
       const address = socket.address();
-      console.log(`server listening ${address.address}:${address.port}`);
+    //  console.log(`server listening ${address.address}:${address.port}`);
     });
 
     socket.bind(this.port, "10.0.50.151");
@@ -491,7 +482,6 @@ Receiver.prototype.stop = function () {
 const trap = new Receiver(
   5162,
   (remote, pkt) => {
-   //console.log(remote);
     const sourceIP = remote.address;
     const {
       version,

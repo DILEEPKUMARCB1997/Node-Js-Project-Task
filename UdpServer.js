@@ -64,6 +64,7 @@ socket.on("message", function (message, remote) {
   packet[5] = 0xda;
 
   socket.send(packet, 0, packet.length, remote.port, remote.address);
+  console.log(packet);
 
 });
 
