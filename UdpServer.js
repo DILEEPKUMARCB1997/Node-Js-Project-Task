@@ -3,12 +3,21 @@ const socket = dgram.createSocket("udp4");
 
 // console.log("socket", socket);
 
+var packet = new Uint8Array(300);
+packet[0] = 2;
+packet[1] = 1;
+packet[2] = 6;
+packet[4] = 0x92;
+packet[5] = 0xda;
+
 socket.on("listening", function (message) {
   const address = socket.address();
+
   console.log(
     "UDP socket listening on " + address.address + ":" + address.port
   );
-  console.log("message", message);
+  // console.log("message", message);
+  socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
 });
 
 socket.on("message", function (message, remote) {
@@ -28,45 +37,42 @@ socket.on("message", function (message, remote) {
       .join(":")
       .toUpperCase()
   );
-
-  // console.log("mssg", message[1]);
-
-  // console.log("old ip", message[12], message[13], message[14], message[15]);
-  // console.log("new ip", message[16], message[17], message[18], message[19]);
-  // console.log(
-  //   "new gateway",
-  //   message[24],
-  //   message[25],
-  //   message[26],
-  //   message[27]
-  // );
-  // console.log(
-  //   "mac add",
-  //   message[28],
-  //   message[29],
-  //   message[30],
-  //   message[31],
-  //   message[32],
-  //   message[33]
-  // );
-
-  // const ms = Buffer.from(message.toJSON().data);
-  // console.log("ms", ms.toString("hex"));
-
-  const packet = new Uint8Array(300);
-  packet[0] = 2;
-  packet[1] = 1;
-  packet[2] = 6;
-  packet[4] = 0x92;
-  packet[5] = 0xda;
-
-  socket.send(packet, 0, packet.length, remote.port, remote.address);
+  console.log("Model - ", message.subarray(44, 64).toString());
+  console.log("Host Name - ", message.subarray(90, 106).toString("utf-8"));
+  console.log(
+    "IP Address - ",
+    message[12] +
+      "." +
+      message[13] +
+      "." +
+      message[14] +
+      "." +
+      message[15].toString()
+  );
+  console.log(
+    "Netmask - ",
+    message[236] +
+      "." +
+      message[237] +
+      "." +
+      message[238] +
+      "." +
+      message[239].toString()
+  );
+  console.log(
+    "Gateway - ",
+    message[24] +
+      "." +
+      message[25] +
+      "." +
+      message[26] +
+      "." +
+      message[27].toString()
+  );
+  console.log("ipaddress", remote.address);
 });
 
-socket.bind(55954, "10.0.50.151", () => {
+socket.bind(55954, "10.0.50.150", () => {
+  socket.setBroadcast(true);
   console.log("server binded on port 55954");
 });
-
-// socket.connect(55954, "10.0.50.90", () => {
-//   console.log("connected");
-// });

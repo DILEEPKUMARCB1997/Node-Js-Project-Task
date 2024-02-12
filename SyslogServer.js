@@ -1,47 +1,45 @@
-// const dgram = require("node:dgram");
-// const server = dgram.createSocket("udp4");
-
-// server.on("error", (err) => {
-//   console.error(`server error:\n${err.stack}`);
-//   server.close();
-// });
-
-// server.on("message", (msg, rinfo) => {
-//   console.log("message", msg.toString());
-//   console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-// });
-
-// server.on("listening", () => {
-//   const address = server.address();
-//   console.log(`server listening ${address.address}:${address.port}`);
-// });
-
-// server.bind(55954, "10.0.50.150", () => {
-//   server.setBroadcast(true);
-// });
-
 const dgram = require("dgram");
-
 const socket = dgram.createSocket("udp4");
 
-socket.on("message", (msg, rinfo) => {
-  console.log(msg.toString());
-  //console.log(rinfo);
+// console.log("socket", socket);
+
+socket.on("listening", function (message) {
+  const address = socket.address();
+
   console.log(
-    `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
+    "UDP socket listening on " + address.address + ":" + address.port
   );
 });
 
-socket.on("error", (err) => {
-  console.error("Socket error:", err);
-  socket.close();
-});
+socket.on("message", function (message, remote) {
+  console.log(
+    "SERVER RECEIVED:",
+    remote.address + ":" + remote.port + " - " + message
+  );
 
-socket.on("listening", () => {
-  const address = socket.address();
-  console.log(`server listening ${address.address}:${address.port}`);
+  console.log("message", message);
+  console.log(message.toString());
+  // const PriValue = message.toString().match(/<(\d+)>/)[1];
+  const PriValue = message.subarray(1, 2).toString();
+  const timeStamp = message.subarray(3, 22).toString();
+  const upTime = message.subarray(24, 35).toString();
+  const hostName = message.subarray(36, 42).toString();
+  const msg = message.subarray(44, 110).toString();
+
+  // const version = parseInt(PriValue / 8);
+  // const version = message.readUInt8(0);
+  // const timeStamp = new Date().toISOString();
+  const syslogMsg = {
+    priority: PriValue,
+    TimeStamp: timeStamp,
+    UpTime: upTime,
+    HostName: hostName,
+    Message: msg,
+  };
+  console.log("syslog message", syslogMsg);
 });
 
 socket.bind(5514, "10.0.50.150", () => {
   socket.setBroadcast(true);
+  console.log("server binded on port 5514");
 });
