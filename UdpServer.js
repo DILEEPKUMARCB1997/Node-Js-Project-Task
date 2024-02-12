@@ -72,7 +72,7 @@ socket.on("message", function (message, remote) {
   console.log("ipaddress", remote.address);
 });
 
-socket.bind(55954, "10.0.50.90", () => {
+socket.bind(55954, "10.0.50.150", () => {
   socket.setBroadcast(true);
   console.log("server binded on port 55954");
 });
