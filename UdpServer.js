@@ -74,7 +74,7 @@ socket.on("message", function (message, remote) {
   console.log("Is DHCP - ", message[106].toString() == "0" ? "false" : "true");
 });
 
-socket.bind(55954, "10.0.50.90", () => {
+socket.bind(55954, "10.0.50.150", () => {
   socket.setBroadcast(true);
   console.log("server binded on port 55954");
 });
