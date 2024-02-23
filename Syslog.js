@@ -1,34 +1,18 @@
-var Syslogd = require("syslogd");
+const dgram = require("dgram");
+const socket = dgram.createSocket("udp4");
 
-Syslogd(function (info) {
-  //console.log("syslog msg", info);
-  // info = {
-  //   facility: 7,
-  //   severity: 22,
-  //   tag: "tag",
-  //   hostname: "hostname",
-  //   address: "127.0.0.1",
-  //   family: "IPv4",
-  //   port: null,
-  //   size: 39,
-  //   msg: "info",
-  // };
-
-  const syslogMsg = {
-    facility: info.facility,
-    severity: Number.isNaN(info.severity) ? 0 : info.severity,
-    tag: info.tag,
-    sourceIP: info.address,
-    uptime: info.hostname,
-    message: info.msg,
-  };
-  console.log("syslog message", syslogMsg);
-}).listen(5514, function (err) {
-  console.log(`Syslog server started 5514`);
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
 });
 
-// var dgram = require("dgram");
-// var syslog = require("syslogd");
+socket.on("message", (message, rinfo) => {
+  console.log(message);
+  const sourceIP = rinfo.address;
+  const sourcePort = rinfo.port;
+  // rest of your code
+  console.log(sourceIP,sourcePort);
+});
 
 // function Syslogd(fn, opt) {
 //   if (!(this instanceof Syslogd)) {
