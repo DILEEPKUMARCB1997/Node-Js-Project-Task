@@ -152,7 +152,17 @@ Syslogd(function (info) {
 //   console.log(`Syslog server started 5514`);
 // });
 
-
-
-
 //https://www.rapid7.com/blog/post/2017/05/24/what-is-syslog/
+
+// const PriValue = message.toString().match(/<(\d+)>/)[1];
+
+// const index = message.toString().indexOf(">");
+// const PriValue = message.toString().substring(index - 1, index);
+// const facility = Math.floor(PriValue / 8);
+// const severity = PriValue % 8;
+// const lastIndex = message.toString().lastIndexOf(":", 53);
+// console.log("index of", lastIndex);
+// const msg = message.toString().substring(lastIndex + 2);
+// const tagname = message.toString().substring(lastIndex, 36);
+// const uptime = message.toString().match(/(\d{2}d\d{2}h\d{2}m\d{2}s)/)[0];
+// const timestamp = new Date().toISOString().toString("");
