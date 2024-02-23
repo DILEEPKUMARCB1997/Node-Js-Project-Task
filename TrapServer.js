@@ -1,99 +1,62 @@
-/*
-const dgram=require('dgram')
-const socket = dgram.createSocket("udp4");
-
-socket.on("message", (msg, rinfo) => {
-  //console.log(msg);
-  console.log(rinfo);
-  console.log(
-    `Received broadcast from ${rinfo.address}:${rinfo.port} - ${msg}`
-  );
-});
-
-socket.on("error", (err) => {
-  console.error("Socket error:", err);
-  socket.close();
-});
-
-socket.on("listening", () => {
-  const address = socket.address();
-  console.log(`server listening ${address.address}:${address.port}`);
-});
-
-socket.bind(5162, () => {
-  //socket.setBroadcast(true);
-});
-*/
 const dgram = require("dgram");
 const socket = dgram.createSocket("udp4");
+const trapMapping = [
+  "cold start",
+  "warm start",
+  "link down",
+  "link up",
+  "authentication failure",
+  "egp neighbor loss",
+  "enterprise specific",
+];
 
 socket.on("listening", () => {
   const address = socket.address();
-  console.log(`Trap Server listening on ${address.address}:${address.port}`);
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
 });
 
 socket.on("message", (message, remote) => {
-  const version = message[4];
-  const community = message.subarray(12, 17).toString();
-  const enterprise = message.subarray(18, 25).toString("hex");
-  const specific = message[25];
-  const generic = message[26];
-  const upTime = message.readUInt32BE(20);
-  const varbinds = parseVarbinds(message, 28);
-  const msg = varbinds[0].value;
+  const sourceIP = remote.address;
+  const version = message[4].toString();
+  //message.toString().trim().indexOf(0)
+  const community = message.subarray(7, 12).toString("utf-8");
+  const enterprise = message
+    .slice(18, 24)
+    .toString("hex")
+    .match(/.{1}/g)
+    .join(".");
+  const specific = message[2].toString(8);
+  const generic = message.readUInt8(18).toString(8);
+  const uptime = message.readUInt32BE(33).toString(16);
+  const msg = `Port ${generic} - ${trapMapping[specific]}`;
+  const timestamp = new Date().toISOString().toString();
+  const variableBindings = [];
 
-  console.log({
-    sourceIP: remote.address,
-    version,
-    community,
-    enterprise,
-    specific,
-    generic,
-    upTime,
-   varbinds,
-    msg,
-  });
+  for (let i = 46; i < message.length; i += 4) {
+    const oid = message
+      .slice(i, i + 4)
+      .toString("hex")
+      .match(/.{1}/g)
+      .join(".");
+    const type = message.readUint8(i + 1);
+    const value = message.readUint8(i + 1);
+    variableBindings.push({ oid, type, value });
+  }
+
+  console.log("Received SNMP trap:");
+  console.log("- SourceIP:", sourceIP);
+  console.log("- Version:", version);
+  console.log("- Community:", community);
+  console.log("- Enterprise:", enterprise);
+  console.log("- Specific:", specific);
+  console.log("- Generic:", generic);
+  console.log("- Uptime:", uptime);
+  console.log("- Timestamp:", timestamp);
+  console.log("- msg:", msg);
+  console.log("- Variable Bindings:", variableBindings);
 });
 
-function parseVarbinds(message, start) {
-  const varbinds = [];
-  let index = start;
-
-  while (index < message.length) {
-    const oid = parseOid(message, index);
-    index += oid.length;
-
-    const type = message[index];
-    index++;
-
-    const value = parseValue(message, index, type);
-    index += value.length;
-
-    varbinds.push({ oid, type, value });
-  }
-
-  return varbinds;
-}
-
-function parseOid(message, start) {
-  const length = message[start];
-  const oid = message.subarray(start + 1, start + length + 1);
-  return oid;
-}
-
-function parseValue(message, start, type) {
-  switch (type) {
-    case 1: // Integer
-      return message.readInt32BE(start);
-    case 2: // Octet String
-      const length = message[start];
-      return message.subarray(start + 1, start + length + 1).toString("utf-8");
-    default:
-      throw new Error(`Unsupported value type: ${type}`);
-  }
-}
-
-socket.bind(5162, "10.0.50.151", () => {
-//  socket.setBroadcast(true);
-  //console.log("server binded on port 5162");
+socket.bind(5162, "0.0.0.0", () => {
+  socket.setBroadcast(true);
+  console.log("SNMP trap server binded on port 5162");
 });

@@ -14,12 +14,6 @@ socket.on("message", (message, rinfo) => {
   console.log(sourceIP,sourcePort);
 });
 
-<<<<<<< HEAD
-socket.bind(5162, "0.0.0.0", () => {
-  socket.setBroadcast(true);
-  console.log("SNMP trap server");
-});
-=======
 // function Syslogd(fn, opt) {
 //   if (!(this instanceof Syslogd)) {
 //     return new Syslogd(fn, opt);
@@ -156,4 +150,3 @@ socket.bind(5162, "0.0.0.0", () => {
 // const tagname = message.toString().substring(lastIndex, 36);
 // const uptime = message.toString().match(/(\d{2}d\d{2}h\d{2}m\d{2}s)/)[0];
 // const timestamp = new Date().toISOString().toString("");
->>>>>>> eb25731000aec8f45fc5d563646a2e480de55bbf

@@ -48,34 +48,6 @@
 const dgram = require("dgram");
 const socket = dgram.createSocket("udp4");
 
-<<<<<<< HEAD
-const connectedDevices = new Set();
-
-socket.on("listening", () => {
-  const address = socket.address();
-  console.log(`UDP socket listening on ${address.address}:${address.port}`);
-});
-
-socket.on("message", (message, rinfo) => {
-  console.log("Received message:", message.toString());
-  const sourceIP = rinfo.address;
-  //const sourcePort = rinfo.port;
-  const version=message[4]
-  const community=message.subarray(7,12).toString()
-  const enterprise=message[18]+ "."+message[19]+ "."+message[20]+ "."+message[21]+ "."+message[22]+ "."+message[23]+ "."+message[24]+ "."+message[25]+ "."+message[26]+ "."+message[27].toString(16)
-  const specific=message[25]
-  const generic=message[29]
-  const uptime=message.readUInt32BE(33).toString(16)
-  const msg=message.subarray(37,42).toString('utf-8')
-console.log(["-Version :",version,"-Community :",community,"-Enterprise :",enterprise, "-Specific :",specific,"-Generic :",
-generic,"uptime :",uptime,"-Message :",msg,"-SourceIp :",sourceIP]);
-});
-
-socket.bind(5162, "0.0.0.0", () => {
-  socket.setBroadcast(true);
-  console.log("SNMP trap server");
-});
-=======
 socket.on("listening", function () {
   const address = socket.address();
 
@@ -113,4 +85,3 @@ socket.on("message", function (message, remote) {
 });
 
 socket.bind(5514);
->>>>>>> eb25731000aec8f45fc5d563646a2e480de55bbf
