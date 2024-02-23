@@ -21,13 +21,13 @@ socket.on("listening", function (message) {
 });
 
 socket.on("message", function (message, remote) {
-  console.log(message);
+  console.log(message.toString('utf-8'));
   console.log(
     "SERVER RECEIVED:",
     remote.address + ":" + remote.port + " - " + message
   );
 
-  //console.log("msg", message);
+  console.log("msg", message);
 
   console.log(
     "mac",
@@ -38,8 +38,8 @@ socket.on("message", function (message, remote) {
       .join(":")
       .toUpperCase()
   );
-  console.log("Model - ", message.subarray(44, 64).toString());
-  console.log("Host Name - ", message.subarray(90, 106).toString("utf-8"));
+  console.log("Model - ", message.subarray(44, 70).toString());
+  console.log("Host Name - ", message.subarray(89,107).toString());
   console.log(
     "IP Address - ",
     message[12] +

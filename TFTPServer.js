@@ -475,27 +475,31 @@
 
 // trap.start();
 
+const community = "public";
+const communityBytes = Buffer.from(community);
+const communityLength = Buffer.alloc(1);
+console.log(communityLength.writeUInt8(communityBytes.length, 0))
 
 
 
 
-const dgram=require('dgram')
+// const dgram=require('dgram')
 
-const server = dgram.createSocket("udp4");
+// const server = dgram.createSocket("udp4");
 
-server.on("error", (err) => {
-  console.error(`server error:\n${err.stack}`);
-  server.close();
-});
+// server.on("error", (err) => {
+//   console.error(`server error:\n${err.stack}`);
+//   server.close();
+// });
 
-server.on("message", (msg, rinfo) => {
- // console.log(msg);
-  console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-});
+// server.on("message", (msg, rinfo) => {
+//  // console.log(msg);
+//   console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+// });
 
-server.on("listening", () => {
-  const address = server.address();
-  console.log(`server listening ${address.address}:${address.port}`);
-});
+// server.on("listening", () => {
+//   const address = server.address();
+//   console.log(`server listening ${address.address}:${address.port}`);
+// });
 
-server.bind(5162);
+// server.bind(5162);

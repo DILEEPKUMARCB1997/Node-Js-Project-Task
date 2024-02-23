@@ -33,7 +33,7 @@ socket.on("listening", () => {
 });
 
 socket.on("message", (message, remote) => {
-  const version = message[0];
+  const version = message[4];
   const community = message.subarray(12, 17).toString();
   const enterprise = message.subarray(18, 25).toString("hex");
   const specific = message[25];

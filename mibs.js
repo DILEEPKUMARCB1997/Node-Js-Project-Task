@@ -1,91 +1,64 @@
-// // var buf = Buffer.from("abc");
-// // console.log(buf.toString());
-// var buf = Buffer.alloc(15);
-// console.log(buf.toString());
-// const dgram = require("dgram");
-// const socket = dgram.createSocket("udp4");
+// const data =
+//   "300302010004056d65656e61a42f060a2b060104019d2b00000f40040a00320c0201030201034302040b3011300f060a2b06"; // Your hexadecimal data
 
-// socket.on("listening", function (message) {
-//   const address = socket.address();
+// const buffer = Buffer.from(data, "hex");
 
-//   console.log(
-//     "UDP socket listening on " + address.address + ":" + address.port
-//   );
-// });
+// // Extract integers from the buffer
+// const integers = [];
+// for (let i = 0; i < buffer.length; i += 4) {
+//   integers.push(buffer.readUInt16BE(i));
+// }
 
-// socket.on("message", function (message, remote) {
-//   console.log(
-//     "SERVER RECEIVED:",
-//     remote.address + ":" + remote.port + " - " + message
-//   );
-//   console.log(message.toString());
-// });
-
-// socket.bind(5162, "10.0.50.151", () => {
-//   socket.setBroadcast(true);
-//   console.log("server binded on port 5162");
-// });
+// console.log(integers);
 
 
-const dgram = require("dgram");
-const socket = dgram.createSocket("udp4");
 
-socket.on("listening", () => {
-  const address = socket.address();
-  console.log(`UDP socket listening on ${address.address}:${address.port}`);
-});
+// const buffer = new Uint8Array([0x30, 0x3b, 0x02, 0x01, 0x00, 0x04, 0x05, 0x6d, 0x65, 0x65, 0x6e, 0x61, 0xa4, 0x2f, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x9d, 0x2b, 0x00, 0x00, 0x0f, 0x40, 0x04, 0x0a, 0x00, 0x32, 0x0c, 0x02, 0x01, 0x03, 0x02, 0x01, 0x03, 0x43, 0x02, 0x04, 0x0b, 0x30, 0x11, 0x30, 0x0f, 0x06, 0x0a, 0x2b, 0x0 ]);
+// const dataView = new DataView(buffer.buffer);
+// const integers = [];
 
-socket.on("message", (message, remote) => {
-  //console.log(message);
-  const sourceIP=remote.address
-  const version = message.readUInt8(0);
-  const community = message.subarray(7,12).toString("utf-8");
-  const enterprise = message.readUInt32BE(12);
-  const specific = message.readInt8();
-  const generic = message.readInt8();
-  const uptime = message.readUInt16BE(16)
-  const msg=message.subarray().toString('utf-8')
-  const agentAddress = message
-    .slice(28, 34)
-    .toString("hex")
-    .match(/.{1,2}/g)
-    .join(":")
-    .toUpperCase();
-  const trapOid = message
-    .slice(34, 42)
-    .toString("hex")
-    .match(/.{1,2}/g)
-    .join(".");
-  const timestamp = new Date().toISOString();
-  // const variableBindings = [];
+// for (let i = 0; i < buffer.length; i += 4) {
+//     const isLittleEndian = true; // or false for big-endian systems
+//     const integer = dataView.getInt32(i, isLittleEndian);
+//     integers.push(integer);
+// }
 
-  // for (let i = 46; i < message.length; i += 4) {
-  //   const oid = message
-  //     .slice(i, i + 4)
-  //     .toString("hex")
-  //     .match(/.{1,2}/g)
-  //     .join(".");
-  //   //const type = message.readUInt8(i + 4);
-  //  // const value = message.readUInt32BE(i + 5);
-  //  // variableBindings.push({ oid, type, value });
-  // }
+// console.log(integers);
 
-  console.log("Received SNMP trap:");
-  console.log("-SourceIP:",sourceIP);
-  console.log("- Version:", version);
-  console.log("- Community:", community);
-  console.log("- Enterprise:", enterprise);
-  console.log("- Specific:", specific);
-  console.log("- Generic:", generic);
-  console.log("- Uptime:", uptime);
-   console.log("- Agent Address:", agentAddress);
-  console.log("- Trap OID:", trapOid);
-  console.log("- Timestamp:", timestamp);
-  console.log("-msg:",msg);
-  // console.log("- Variable Bindings:", variableBindings);
-});
 
-socket.bind(5161, "0.0.0.0", () => {
-  socket.setBroadcast(false)
-  console.log("SNMP trap server binded on port 5161");
-});
+// const bufferData = Buffer.from([
+//   0x30, 0x2b, 0x02, 0x01, 0x00, 0x04, 0x05, 0x76, 0x65, 0x65, 0x6e, 0x61, 0xa4,
+//   0x1f, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x9d, 0x2b, 0x00, 0x00, 0x0f,
+//   0x40, 0x04, 0x0a, 0x00, 0x32, 0x0c, 0x02, 0x01, 0x04, 0x02, 0x01, 0x00, 0x43,
+//   0x03, 0x0e, 0x3c, 0x5a, 0x30, 0x00,
+// ]);
+
+// console.log(bufferData.readUInt32LE(0).toString(16));
+
+
+
+const hex = '6e';
+const integer = parseInt(hex, 16);
+console.log(integer); // Output: 110
+/*
+// Extracting string value
+const stringValue = bufferData.toString("utf8");
+
+// Extracting integer value
+const integerArray = bufferData.slice(8, 12);
+const integerValue = integerArray.readUInt32BE();
+
+console.log("String Value:", stringValue);
+console.log("Integer Value:", integerValue);
+
+
+const bufferData1 = Buffer.from([
+  0x30, 0x2b, 0x02, 0x01, 0x00, 0x04, 0x05, 0x76, 0x65, 0x65, 0x6e, 0x61, 0xa4,
+  0x1f, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x9d, 0x2b, 0x00, 0x00, 0x0f,
+  0x40, 0x04, 0x0a, 0x00, 0x32, 0x0c, 0x02, 0x01, 0x04, 0x02, 0x01, 0x00, 0x43,
+  0x03, 0x0e, 0x3c, 0x5a, 0x30, 0x00,
+]);
+
+const integer = bufferData1.readUInt32BE(0);
+console.log(integer);
+*/

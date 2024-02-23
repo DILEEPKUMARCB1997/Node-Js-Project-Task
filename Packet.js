@@ -1,109 +1,383 @@
-const async = require("async");
+// const dgram = require("dgram");
+// const socket = dgram.createSocket("udp4");
+// const trapMapping = [
+//   "cold start",
+//   "warm start",
+//   "link down",
+//   "link up",
+//   "authentication failure",
+//   "egp neighbor loss",
+//   "enterprise specific",
+// ];
 
-class MonitoringProtocol {
-  constructor() {
-    this.authentication = {
-      isValid: true,
-    };
+
+// socket.on("listening", () => {
+//   const address = socket.address();
+//   console.log(`UDP socket listening on ${address.address}:${address.port}`);
+  
+// });
+
+// socket.on("message", (message, remote) => {
+// //  console.log(message);
+//   const sourceIP = remote.address;
+//   const version = message[4];
+//   const community = message.toString("utf8", 7,12).replace(/\s+/g,'');
+//   const enterprise = message
+//     .slice(11, 18)
+//     .toString("hex")
+//     .match(/.{1}/g)
+//     .join(".");
+//   const specific = message[2];
+//   const generic = message.readUInt8(18);
+//   const uptime = message.readUInt32BE(22);
+//   const msg = `Port ${generic} - ${trapMapping[specific]}`;
+//   const timestamp = new Date().toISOString();
+
+//   const variableBindings = [];
+
+//   for (let i = 46; i < message.length; i += 4) {
+//     const oid = message
+//       .slice(i, i + 4)
+//       .toString("hex")
+//       .match(/.{1}/g)
+//       .join(".");;
+//     const type = message.readUInt8(i + 1);
+//     const value = message.readUInt8(i + 1);
+//     variableBindings.push({ oid, type, value });
+//   }
+
+//   console.log("Received SNMP trap:");
+//   console.log("- SourceIP:", sourceIP);
+//   console.log("- Version:", version);
+//   console.log("- Community:", community);
+//   console.log("- Enterprise:", enterprise);
+//   console.log("- Specific:", specific);
+//   console.log("- Generic:", generic);
+//   console.log("- Uptime:", uptime);
+//   console.log("- Timestamp:", timestamp);
+//   console.log("- Message:", msg);
+//   console.log("- Variable Bindings:", JSON.stringify(variableBindings));
+// });
+
+// socket.bind(5162, () => {
+//   socket.setBroadcast(true);
+//   console.log("SNMP trap server")
+// })
+
+
+
+
+
+/*
+const dgram = require("dgram");
+const socket = dgram.createSocket("udp4");
+const trapMapping = [
+  "cold start",
+  "warm start",
+  "link down",
+  "link up",
+  "authentication failure",
+  "egp neighbor loss",
+  "enterprise specific",
+];
+const packet = Buffer.from([
+  0x30, 0x2f, 0x02, 0x01, 0x00, 0x04, 0x09, 0x6d, 0x65, 0x65, 0x6e, 0x61, 0x6b,
+  0x73, 0x68, 0x69, 0xa4, 0x1f, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x9d,
+  0x2b, 0x00, 0x00, 0x0f, 0x40, 0x04, 0x0a, 0x00, 0x32, 0x0c, 0x02, 0x01, 0x04,
+  0x02, 0x01, 0x00, 0x43, 0x03, 0x10, 0xc3, 0x14, 0x30, 0x00,
+]);
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
+  socket.send(packet, 0, packet.length, 5162, "10.0.50.151", (err) => {
+    if (err) {
+      console.log("Error sending invite packet:", err);
+    } else {
+      console.log("Invite packet sent");
+    }
+  });
+});
+
+socket.on("message", (message, remote) => {
+  const sourceIP = remote.address;
+  const version = message[4];
+  const community = message.subarray(7, 12).toString().replace(/\s+/g, "");
+  const enterprise =
+    message[11014] +
+    "." +
+    message[42031] +
+    "." +
+    message[12291] +
+    "." +
+    message[413] +
+    "." +
+    message[25957];
+  const specific = message[11014];
+  const generic = message[413];
+  const uptime = message[15];
+  const msg = `Port ${generic} - ${trapMapping[specific]}`;
+  const variableBindings = [];
+
+  for (let i = 46; i < message.length; i += 4) {
+    const oid = message
+      .slice(i, i + 4)
+      .toString("hex")
+      .match(/.{1}/g)
+      .join(".");
+    const type = message.readUInt8(i + 1);
+    const value = message.readUInt8(i + 1);
+    variableBindings.push({ oid, type, value });
   }
 
-  async getInvitePacket(data) {
-    if (!this.authentication.isValid) {
-      return null;
-    }
-    try {
-      const packet = Buffer.alloc(300);
-      packet[0] = 2;
-      packet[1] = 1;
-      packet[2] = 6;
-      packet[4] = 0x92;
-      packet[5] = 0xda;
+  console.log("Received SNMP trap:");
+  console.log("- SourceIP:", sourceIP);
+  console.log("- Version:", version);
+  console.log("- Community:", community);
+  console.log("- Enterprise:", enterprise);
+  console.log("- Specific:", specific);
+  console.log("- Generic:", generic);
+  console.log("- Uptime:", uptime);
+  console.log("- msg:", msg);
+  console.log("- Variable Bindings:", JSON.stringify(variableBindings));
+});
 
-      return packet;
-    } catch (error) {
-      return null;
-    }
+socket.bind(5162, "0.0.0.0", () => {
+  socket.setRecvBufferSize(10);
+  console.log("SNMP trap server binded on port 5162");
+});
+
+
+
+// const dgram = require("dgram");
+// const socket = dgram.createSocket("udp4");
+// const trapMapping = [
+//   "cold start",
+//   "warm start",
+//   "link down",
+//   "link up",
+//   "authentication failure",
+//   "egp neighbor loss",
+//   "enterprise specific",
+// ];
+
+// const indexes = [
+//   12291, 4, 25957,
+//   42031, 11014, 413,
+//   15, 2560, 513,
+//   259, 1035, 12303,
+//   11014
+// ];
+
+// const packet = Buffer.from([
+//   0x30, 0x2f, 0x02, 0x01, 0x00, 0x04, 0x09, 0x6d, 0x65, 0x65, 0x6e, 0x61, 0x6b,
+//   0x73, 0x68, 0x69, 0xa4, 0x1f, 0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x9d,
+//   0x2b, 0x00, 0x00, 0x0f, 0x40, 0x04, 0x0a, 0x00, 0x32, 0x0c, 0x02, 0x01, 0x04,
+//   0x02, 0x01, 0x00, 0x43, 0x03, 0x10, 0xc3, 0x14, 0x30, 0x00,
+//   ...indexes.map(index => index & 0xFF),
+// ]);
+
+// socket.on("listening", () => {
+//   const address = socket.address();
+//   console.log(`UDP socket listening on ${address.address}:${address.port}`);
+//   socket.send(
+//     packet, 0, packet.length, 5162, "10.0.50.151",
+//     (err) => {
+//       if (err) {
+//         console.log("Error sending invite packet:", err);
+//       } else {
+//         console.log("Invite packet sent");
+//       }
+//     }
+//   );
+// });
+
+// socket.on("message", (message, remote) => {
+//   console.log(message);
+//   const sourceIP =
+//     message[1] + "." + message[2] + "." + message[29] + "." + message[1];
+//   const version = message[4];
+//   const community = message.subarray(7, 12).toString().replace(/\s+/g, "");
+//   //const enterprise = message[2] + "." + message[4] + "." + toString().join(".");
+//   // const type = message.readUint8(i + 1);
+//   // const value = message.readUint8(i + 1);
+//   // variableBindings.push({ oid, type, value });
+
+//   console.log("Received SNMP trap:");
+//   console.log("- SourceIP:", sourceIP);
+//   console.log("- Version:", version);
+//   console.log("- Community:", community);
+//   //console.log("- Enterprise:", enterprise);
+//   // console.log("- Specific:", specific);
+//   // console.log("- Generic:", generic);
+//   // console.log("- Uptime:", uptime);
+//   // console.log("- Timestamp:", timestamp);
+//   // console.log("- msg:", msg);
+//   // console.log("- Variable Bindings:", JSON.stringify(variableBindings));
+// });
+
+
+// socket.bind(5162, "0.0.0.0", () => {
+//   socket.setRecvBufferSize(10);
+//   console.log("SNMP trap server binded on port 5162");
+// });
+
+*/
+
+/*
+const dgram = require("dgram");
+const trapMapping = {
+  1: "Cold Start",
+  2: "Warm Start",
+  3: "Link Down",
+  4: "Link Up",
+  5: "Authentication Failure",
+  6: "EGP Neighbor Loss",
+};
+
+const socket = dgram.createSocket("udp4");
+
+const snmpTrapData = [
+  [12291, 4, 25957, 42031, 11014, 413, 15, 2560, 513, 259, 1035, 12303, 11014],
+];
+
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
+
+  snmpTrapData.forEach((data) => {
+    console.log(data);
+    const packet = Buffer.from(data);
+    socket.send(packet, 0, packet.length, 5162, "10.0.50.151", (err) => {
+      if (err) {
+        console.log("Error sending invite packet:", err);
+      } else {
+        console.log("Invite packet sent");
+      }
+    });
+  });
+});
+
+socket.on("message", (message, remote) => {
+  const sourceIP = message.subarray(12, 16).join(".");
+  const version = message[0];
+  const community = message.subarray(7, 12).toString()
+  const enterprise = message
+    .subarray(3, 8)
+    .toString("hex")
+    .replace(/\s+/g, ".");
+  const specific = message[10];
+  const generic = message[11];
+  const uptime = message.readUInt16BE(7)
+  const msg = `Port ${generic} - ${trapMapping[specific]}`;
+  const timestamp = new Date().toISOString();
+  const variableBindings = [];
+
+  for (let i = 46; i < message.length; i += 4) {
+    const oid = message
+      .slice(i, i + 4)
+      .toString("hex")
+      .match(/.{1,2}/g)
+      .join(".");
+    const type = message.readUInt8(i + 1);
+    const value = message.readUInt8(i + 2);
+    variableBindings.push({ oid, type, value });
   }
 
-  async getConfigPacket(data) {
-    if (!this.authentication.isValid) {
-      return null;
-    }
+  console.log("Received SNMP trap:");
+  console.log("- SourceIP:", sourceIP);
+  console.log("- Version:", version);
+  console.log("- Community:", community);
+  console.log("- Enterprise:", enterprise);
+  console.log("- Specific:", specific);
+  console.log("- Generic:", generic);
+  console.log("- Uptime:", uptime);
+  console.log("- Timestamp:", timestamp);
+  console.log("- msg:", msg);
+  console.log("- Variable Bindings:", JSON.stringify(variableBindings));
+});
 
-    const config = {
-      MACAddress: data.MACAddress.replace(/:/g, ""),
-      IPAddress: data.oldIPAddress,
-      newIPAddress: data.newIPAddress,
-      netmask: data.netmask,
-      gateway: data.gateway,
-      hostname: data.hostname,
-      username: data.username,
-      password: data.password,
-    };
+socket.bind(5162, "0.0.0.0", () => {
+  socket.setRecvBufferSize(10);
+  console.log("SNMP trap server binded on port 5162");
+});
+*/
+const dgram = require("dgram");
+const trapMapping = {
+  1: "Cold Start",
+  2: "Warm Start",
+  3: "Link Down",
+  4: "Link Up",
+  5: "Authentication Failure",
+  6: "EGP Neighbor Loss",
+};
 
-    // Split data
-    const oldIP = Buffer.from(
-      config.IPAddress.split(".").map((n) => parseInt(n, 10))
-    );
-    const newIP = Buffer.from(
-      config.newIPAddress.split(".").map((n) => parseInt(n, 10))
-    );
-    const newNetmask = Buffer.from(
-      config.netmask.split(".").map((n) => parseInt(n, 10))
-    );
-    const newGetway = Buffer.from(
-      config.gateway.split(".").map((n) => parseInt(n, 10))
-    );
-    const MAC = Buffer.from(
-      config.MACAddress.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
-    );
+const socket = dgram.createSocket("udp4");
 
-    // Create packet
-    const packet = Buffer.alloc(300);
+const snmpTrapData = [
+  [12291, 4, 25957, 42031, 11014, 413, 15, 2560, 513, 259, 1035, 12303, 11014],
+];
 
-    // Packet header
-    packet[0] = 0;
-    packet[1] = 1;
-    packet[2] = 6;
-    packet[4] = 0x92;
-    packet[5] = 0xda;
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
 
-    // Old IP address
-    oldIP.copy(packet, 12);
+  snmpTrapData.forEach((data) => {
+    console.log(data);
+    const packet = Buffer.from(data);
+    socket.send(packet, 0, packet.length, 5162, "10.0.50.151", (err) => {
+      if (err) {
+        console.log("Error sending invite packet:", err);
+      } else {
+        console.log("Invite packet sent");
+      }
+    });
+  });
+});
 
-    // New IP address
-    newIP.copy(packet, 16);
+socket.on("message", (message, remote) => {
+  const sourceIP = message.subarray(12, 16).join(".");
+  const version = message[0];
+  const community = message.subarray(7, 12).toString('utf-8');
+  const enterprise = message
+    .subarray(3, 8)
+    .toString("hex")
+    .replace(/\s+/g, ".");
+  const specific = message[10];
+  const generic = message[11];
+  const uptime = message.readUInt16BE(7);
+  const msg = `Port ${generic} - ${trapMapping[specific]}`;
+  const timestamp = new Date().toISOString();
+  const variableBindings = [];
 
-    // New Gateway IP address
-    newGetway.copy(packet, 24);
-
-    // MAC address
-    MAC.copy(packet, 28);
-
-    // New netmask
-    newNetmask.copy(packet, 236);
-
-    // hostname
-    let i = 90;
-    for (const c of config.hostname) {
-      packet[i++] = c;
-    }
-
-    // 2-> following are User Name + Password
-    packet[70] = 2;
-
-    // suppose user/password is default: "admin"
-    i = 71;
-    for (const c of config.username) {
-      packet[i++] = c;
-    }
-    packet[i++] = " ".charCodeAt(0);
-    for (const c of config.password) {
-      packet[i++] = c;
-    }
-
-    return packet;
+  for (let i = 46; i < message.length; i += 4) {
+    const oid = message
+      .slice(i, i + 4)
+      .toString("hex")
+      .match(/.{1,2}/g)
+      .join(".");
+    const type = message.readUInt8(i + 1);
+    const value = message.readUInt8(i + 2);
+    variableBindings.push({ oid, type, value });
   }
-}
 
-module.exports = MonitoringProtocol;
+  const deviceDetails = {
+    sourceIP,
+    version,
+    community,
+    enterprise,
+    specific,
+    generic,
+    uptime,
+    timestamp,
+    msg,
+    variableBindings,
+  };
+
+  console.log("Received SNMP trap:");
+  console.log(JSON.stringify(deviceDetails, null, 2));
+});
+
+socket.bind(5162, "0.0.0.0", () => {
+  socket.setRecvBufferSize(10);
+  console.log("SNMP trap server binded on port 5162");
+});

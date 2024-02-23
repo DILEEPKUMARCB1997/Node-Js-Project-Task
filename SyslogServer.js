@@ -1,126 +1,76 @@
+// const dgram = require("dgram");
+// const socket = dgram.createSocket("udp4");
 
-var dgram = require("dgram");
-var syslog = require("syslogd");
+// // console.log("socket", socket);
 
-function Syslogd(fn, opt) {
-  if (!(this instanceof Syslogd)) {
-    return new Syslogd(fn, opt);
-  }
-  this.opt = opt || {};
-  this.handler = fn;
-  this.socket = dgram.createSocket("udp4");
-}
+// socket.on("listening", function (message) {
+//   const address = socket.address();
 
-Syslogd.prototype.listen = function (port, cb) {
-  var socket = this.socket;
-  cb = cb || noop;
-  if (this.port) {
-    syslog("server has binded to %s", port);
-    return;
-  }
-  syslog("try bind to %s", port);
-  this.port = port || 5514; // default is 514
-  socket.on("message", (msg, rinfo) => {
-    // console.log(rinfo);
-    var info = parser(msg, rinfo);
-    this.handler(info);
-  });
+//   console.log(
+//     "UDP socket listening on " + address.address + ":" + address.port
+//   );
+// });
 
-  socket.on("error", (err) => {
-    syslog("binding error", err);
-    cb(err);
-  });
+// socket.on("message", function (message, remote) {
+//   console.log(
+//     "SERVER RECEIVED:",
+//     remote.address + ":" + remote.port + " - " + message
+//   );
 
-  socket.on("listening", () => {
-    syslog("binding ok");
-    cb(null);
-  });
+//   console.log("message", message);
+//   // console.log(message.toString());
+//   // const PriValue = message.toString().match(/<(\d+)>/)[1];
+//   const PriValue = message.subarray(1, 2).toString();
+//   const timeStamp = message.subarray(3, 22).toString();
+//   const upTime = message.subarray(24, 35).toString();
+//   const hostName = message.subarray(36, 42).toString();
+//   const msg = message.subarray(44, 110).toString();
 
-  socket.bind(port);
-  return this;
-};
+//   // const version = parseInt(PriValue / 8);
+//   // const version = message.readUInt8(0);
+//   // const timeStamp = new Date().toISOString();
+//   const syslogMsg = {
+//     priority: PriValue,
+//     TimeStamp: timeStamp,
+//     UpTime: upTime,
+//     HostName: hostName,
+//     Message: msg,
+//   };
+//  // console.log("syslog message", syslogMsg);
+// });
 
-var Severity = {};
-"Emergency Alert Critical Error Warning Notice Informational Debug"
-  .split(" ")
-  .forEach(function (x, i) {
-    Severity[x.toUpperCase()] = i;
-  });
+// socket.bind(5514, "10.0.50.151", () => {
+//   socket.setBroadcast(true);
+//   console.log("server binded on port 5514");
+// });
 
-exports.Severity = Severity;
 
-function parsePRI(raw) {
-  // PRI means Priority, includes Facility and Severity
-  // e.g. 10110111 =  10110: facility 111: severity
-  var binary = (~~raw).toString(2);
-  var facility = parseInt(binary.substr(binary.length - 3), 2);
-  var severity = parseInt(binary.substring(0, binary.length - 3), 2);
-  return [facility, severity];
-}
+const dgram = require("dgram");
+const socket = dgram.createSocket("udp4");
 
-function parser(msg, rinfo) {
-  // https://tools.ietf.org/html/rfc5424
-  // e.g. <PRI>time hostname tag: info
-  //console.log('entering syslog parser');
-  msg = msg + "";
-  // console.log("msg = ", msg);
-  //console.log("rinfo ", rinfo);
-  var tagIndex = msg.indexOf(": ");
-  var format = msg.substr(0, tagIndex);
-  var priIndex = format.indexOf(">");
-  var pri = format.substr(1, priIndex - 1);
-  // console.log('pri = ', pri)
-  pri = parsePRI(pri);
-  var lastSpaceIndex = format.lastIndexOf(" ");
-  var tag = format.substr(lastSpaceIndex + 1);
+const connectedDevices = new Set();
 
-  var last2SpaceIndex = format.lastIndexOf(" ", lastSpaceIndex - 1); // hostname cannot contain ' '
+socket.on("listening", () => {
+  const address = socket.address();
+  console.log(`UDP socket listening on ${address.address}:${address.port}`);
+});
 
-  var upTime = format.substring(last2SpaceIndex + 1, lastSpaceIndex);
-  // time is complex because don't know if it has year
+socket.on("message", (message, rinfo) => {
+  console.log("Received message:", message.toString());
+  const sourceIP = rinfo.address;
+  //const sourcePort = rinfo.port;
+  const version=message[4]
+  const community=message.subarray(7,12).toString()
+  const enterprise=message[18]+ "."+message[19]+ "."+message[20]+ "."+message[21]+ "."+message[22]+ "."+message[23]+ "."+message[24]+ "."+message[25]+ "."+message[26]+ "."+message[27].toString(16)
+  const specific=message[25]
+  const generic=message[29]
+  const uptime=message.readUInt32BE(33).toString(16)
+  const msg=message.subarray(37,42).toString('utf-8')
+console.log(["-Version :",version,"-Community :",community,"-Enterprise :",enterprise, "-Specific :",specific,"-Generic :",
+generic,"uptime :",uptime,"-Message :",msg,"-SourceIp :",sourceIP]);
+});
 
-  var time = format.substring(priIndex + 1, last2SpaceIndex);
-  time = new Date(time);
-  time.setYear(new Date().getFullYear()); // fix year to now
-  return {
-    facility: pri[0],
-    severity: pri[1],
-    tag: tag,
-    time: time,
-    upTime: upTime,
-    address: rinfo.address,
-    family: rinfo.family,
-    port: rinfo.port,
-    size: rinfo.size,
-    msg: msg.substr(tagIndex + 2),
-  };
-}
-/* eslint-enable */
-Syslogd((info) => {
-  // info = {
-  //   facility: 1,
-  //   severity: NaN,
-  //   tag: 'kernel',
-  //   time: 2019-01-14T21:51:26.000Z,
-  //   upTime: '00d00h08m34s',
-  //   address: '192.168.5.83',
-  //   family: 'IPv4',
-  //   port: 56393,
-  //   size: 77,
-  //   msg: 'Link Status: Port4 link is down.\n'
-  // }
-  //console.log('sys info');
-  //console.log(info);
-
-  const syslogMsg = {
-    facility: info.facility,
-    severity: Number.isNaN(info.severity) ? 0 : info.severity,
-    tag: info.tag,
-    sourceIP: info.address,
-    upTime: info.upTime,
-    message: info.msg,
-  };
-  console.log("syslog msg", syslogMsg);
-}).listen(5514, function (err) {
-  console.log(`Syslog server started 5514`);
+socket.bind(5162, "0.0.0.0", () => {
+  socket.setBroadcast(true);
+  console.log("SNMP trap server");
 });
