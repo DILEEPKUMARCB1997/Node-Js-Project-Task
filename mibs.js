@@ -37,9 +37,9 @@
 
 
 
-const hex = '6e';
-const integer = parseInt(hex, 16);
-console.log(integer); // Output: 110
+// const hex = '6e';
+// const integer = parseInt(hex, 16);
+// console.log(integer); // Output: 110
 /*
 // Extracting string value
 const stringValue = bufferData.toString("utf8");

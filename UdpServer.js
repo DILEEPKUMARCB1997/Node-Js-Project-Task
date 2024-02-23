@@ -21,25 +21,25 @@ socket.on("listening", function (message) {
 });
 
 socket.on("message", function (message, remote) {
-  console.log(message.toString('utf-8'));
-  console.log(
-    "SERVER RECEIVED:",
-    remote.address + ":" + remote.port + " - " + message
-  );
+  console.log("SERVER RECEIVED:", remote.address + ":" + remote.port);
 
   console.log("msg", message);
 
   console.log(
-    "mac",
+    "MAC Address - ",
     message
-      .slice(28, 34)
+      .subarray(28, 34)
       .toString("hex")
       .match(/.{1,2}/g)
       .join(":")
       .toUpperCase()
   );
-  console.log("Model - ", message.subarray(44, 70).toString());
-  console.log("Host Name - ", message.subarray(89,107).toString());
+  console.log("Model - ", message.subarray(44, 64).toString());
+  console.log(
+    "Host Name - ",
+    message.subarray(90, 106).toString().split("\0")[0]
+  );
+  console.log("AP - ", message.subarray(110, 235).toString().split("\0")[0]);
   console.log(
     "IP Address - ",
     message[12] +
@@ -70,7 +70,8 @@ socket.on("message", function (message, remote) {
       "." +
       message[27].toString()
   );
-  //console.log("ipaddress", remote.address);
+  console.log("Kernel - ", message[109] + "." + message[108].toString());
+  console.log("Is DHCP - ", message[106].toString() == "0" ? "false" : "true");
 });
 
 socket.bind(55954, "10.0.50.151", () => {

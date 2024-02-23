@@ -32,34 +32,19 @@ socket.on("listening", () => {
 }) 
 
 socket.on("message", (message, remote) => { 
-console.log(message);
+//console.log(message);
 const sourceIP = remote.address
 const version = message[4].toString()
 //message.toString().trim().indexOf(0)
-const community = message.subarray(7,12).toString().replace(/\s+/g, "");
-const enterprise = message.slice(11,18)
+const community = message.subarray(7,12).toString('utf-8')
+const enterprise = message.slice(18,24)
     .toString("hex")
     .match(/.{1}/g)
     .join(".");
-  const specific = message[2].toString(8);
+  const specific = message[32].toString(8);
   const generic = message.readUInt8(18).toString(8)
-  // const uptime =message.readUInt32BE(22).toString(16)
   const uptime = message.readUInt32BE(33).toString(16);
   const msg = `Port ${generic} - ${trapMapping[specific]}`;
- //const agentAddr =message[0]+"."+message[1]+"."+message[2]+"."+message[3]
- // `${bytes[0]}.${bytes[1]}.${bytes[2]}.${bytes[3]}`;
-  // message.subarray(9,38).toString('utf-8')
-  // const agentAddress = message
-  //   .slice(28, 34)
-  //   .toString("hex")
-  //   .match(/.{1,2}/g)
-  //   .join(":")
-  //   .toUpperCase();
-  // const trapOid = message
-  //   .slice(34, 42)
-  //   .toString("hex")
-  //   .match(/.{1,2}/g)
-  //   .join(".");
   const timestamp = new Date().toISOString().toString();
   const variableBindings = [];
 
@@ -82,8 +67,6 @@ const enterprise = message.slice(11,18)
   console.log("- Specific:", specific);
   console.log("- Generic:", generic);
   console.log("- Uptime:",uptime);
- //console.log("- Agent Address:", agentAddr);
-  //console.log("- Trap OID:", trapOid);
   console.log("- Timestamp:", timestamp);
   console.log("- msg:", msg);
   console.log("- Variable Bindings:",JSON.stringify( variableBindings));
