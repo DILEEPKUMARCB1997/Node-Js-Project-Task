@@ -1,8 +1,5 @@
 const dgram = require("dgram");
 const socket = dgram.createSocket("udp4");
-
-// console.log("socket", socket);
-
 var packet = new Uint8Array(300);
 packet[0] = 2;
 packet[1] = 1;
@@ -16,8 +13,9 @@ socket.on("listening", function (message) {
   console.log(
     "UDP socket listening on " + address.address + ":" + address.port
   );
-  // console.log("message", message);
-  socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
+setInterval(() => {
+    socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
+}, 60000);
 });
 
 socket.on("message", function (message, remote) {
