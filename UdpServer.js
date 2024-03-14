@@ -17,6 +17,16 @@ socket.on("listening", function (message) {
   socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
 });
 
+setInterval(() => {
+  socket.send(packet, 0, packet.length, 55954, "255.255.255.255", (err) => {
+    if (err) {
+      console.error("Error sending packet to device:", err);
+    } else {
+      console.log("Message sent to device");
+    }
+  });
+}, 60000);
+
 socket.on("message", function (message, remote) {
   console.log("SERVER RECEIVED:", remote.address + ":" + remote.port);
 
