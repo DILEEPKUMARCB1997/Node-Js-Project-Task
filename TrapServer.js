@@ -37,6 +37,11 @@ socket.on("listening", () => {
 
     const variableBindings = [];
 
+<<<<<<< HEAD
+socket.bind(5162, "10.0.50.90", () => {
+  socket.setBroadcast(true);
+  console.log("SNMP trap server binded on port 5162");
+=======
     for (let i = 46; i < message.length; i += 4) {
       const oid = message
         .slice(i, i + 4)
@@ -61,6 +66,7 @@ socket.on("listening", () => {
     console.log("- msg:", msg);
     console.log("- Variable Bindings:", variableBindings);
   });
+>>>>>>> c2a07c5f529c1a0e6cb4811d51faeb8c0ecfa624
 });
 socket.bind(5162,"10.0.50.151");
 

@@ -9,19 +9,20 @@ packet[5] = 0xda;
 
 socket.on("listening", function (message) {
   const address = socket.address();
-
+  console.log("list msg", message);
   console.log(
     "UDP socket listening on " + address.address + ":" + address.port
   );
-setInterval(() => {
-    socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
-}, 60000);
+  // console.log("message", message);
+  socket.send(packet, 0, packet.length, 55954, "255.255.255.255");
 });
 
 socket.on("message", function (message, remote) {
   console.log("SERVER RECEIVED:", remote.address + ":" + remote.port);
 
   console.log("msg", message);
+
+  // GetConfigPacket(message);
 
   console.log(
     "MAC Address - ",
@@ -49,6 +50,16 @@ socket.on("message", function (message, remote) {
       message[15].toString()
   );
   console.log(
+    "New IP Address - ",
+    message[16] +
+      "." +
+      message[17] +
+      "." +
+      message[18] +
+      "." +
+      message[19].toString()
+  );
+  console.log(
     "Netmask - ",
     message[236] +
       "." +
@@ -72,7 +83,7 @@ socket.on("message", function (message, remote) {
   console.log("Is DHCP - ", message[106].toString() == "0" ? "false" : "true");
 });
 
-socket.bind(55954, "10.0.50.151", () => {
+socket.bind(55954, "10.0.50.90", () => {
   socket.setBroadcast(true);
   console.log("server binded on port 55954");
 });
