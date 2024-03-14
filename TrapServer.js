@@ -56,7 +56,7 @@ socket.on("message", (message, remote) => {
   console.log("- Variable Bindings:", variableBindings);
 });
 
-socket.bind(5162, "0.0.0.0", () => {
+socket.bind(5162, "10.0.50.90", () => {
   socket.setBroadcast(true);
   console.log("SNMP trap server binded on port 5162");
 });
